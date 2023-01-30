@@ -147,6 +147,16 @@ def setup(hass, config):
 
             hass.services.call("shopping_list", shopping_list_service, {"name": item["text"]}, True)
 
+    def clear_shopping_list(call):
+        """Clear a google keep shopping list."""        
+        list_name = call.data.get(SERVICE_LIST_NAME, default_list_name)
+
+        # Sync with Google servers
+        keep.sync()
+        google_keep_list = _get_or_create_list_name_(list_name)
+        google_keep_list.delete()
+        
+
     def _get_or_create_list_name_(list_name):
         """ Find the target list amongst all the Keep notes/lists """
 
@@ -163,6 +173,7 @@ def setup(hass, config):
 
     # Register the service google_keep.add_to_list with Home Assistant.
     hass.services.register(DOMAIN, 'add_to_list', add_to_list, schema=SERVICE_LIST_SCHEMA)
+    hass.services.register(DOMAIN, 'clear_shopping_list', clear_shopping_list, schema=SERVICE_LIST_SCHEMA)
 
     # Register the service google_keep.sync_shopping_list with Home Assistant.
     SHOPPING_LIST = hass.data.get(SHOPPING_LIST_DOMAIN)
