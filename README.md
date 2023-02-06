@@ -17,11 +17,10 @@ gkeep:
 This component relies on [gkeepapi](https://github.com/kiwiz/gkeepapi), an unofficial client for the Google Keep API.
 
 ## Usage
-The original intended use of this component was to restore the capability of Google Assistant to add things to Google Keep lists.
-I accomplish this with a combination of this custom component running on Home Assistant and [IFTTT](https://ifttt.com/).
+I use this to keep Google Keep in sync with the Home Assistant shopping list and vice versa, allowing us to ask Google what is on the shopping list and add to HA through there.
 
 ### Home Assistant service
-With this custom component loaded, two services named `gkeep.add_to_list` and `gkeep.sync_shopping_list` are available.
+With this custom component loaded the following services are available.
 
 #### Add to List
 This service call has two data inputs: `title` and `things`, where `title` is the title of the Google Keep list to update, and `things` is a either a list or string of things to add to the list.
@@ -87,34 +86,13 @@ automation:
           title: 'Home Supplies'
 ```
 
-### IFTTT applet and Home Assistant automation
-A combination of the [Google Assistant](https://ifttt.com/google_assistant) trigger and the [Webhooks](https://ifttt.com/maker_webhooks) action is used to trigger the new Home Assistant service via Google Assistant.
-One IFTTT applet must be made per Google Keep list of interest, with the list name (e.g., 'Grocery' in the example below) hardcoded into the applet.
-For example:
+#### Clear Shopping List
+You can use this service to delete a list, this intakes a title parameter.
 
-**IF**: Google Assistant/Say a phrase with a text ingredient  
-- *What do you want to say?*: `Add $ to the grocery list`
-- *What do you want the Assistant to say in response?*: `Okay, adding $ to your grocery list`
+#### Share Shopping List
+You can use this service to share a shopping list
 
-**THEN**: Webhooks/Make a web request  
-- *URL*: `https://thisismyhassurl.org/api/webhook/ABCXYZ123456`
-- *Method*: `POST`
-- *Content Type*: `application/json`
-- *Body*: `{ "action":"call_service", "service":"gkeep.add_to_list", "title":"Grocery", "things":"{{TextField}}" }`
-
-A Home Assistant automation to receive and process Google Assistant inputs via IFTTT can have the form:
-
-```yaml
-automation:
-  - alias: Google Keep list update
-    trigger:
-      platform: event
-      event_type: ifttt_webhook_received
-      event_data:
-        action: call_service
-    action:
-      service_template: '{{ trigger.event.data.service }}'
-      data_template:
-        title: '{{ trigger.event.data.title }}'
-        things: '{{ trigger.event.data.things }}'
-```
+#### Todo
+Make readthedocs
+Add rest of gkeepapi endpoints
+Change current services to be more generic (clear_shopping_list should be clear_list for example as we're not just for shopping lists)
