@@ -93,6 +93,6 @@ You can use this service to delete a list, this intakes a title parameter.
 You can use this service to share a shopping list
 
 #### Todo
-Make readthedocs
-Add rest of gkeepapi endpoints
-Change current services to be more generic (clear_shopping_list should be clear_list for example as we're not just for shopping lists)
+- Make readthedocs
+- Add rest of gkeepapi endpoints
+- Change current services to be more generic (clear_shopping_list should be clear_list for example as we're not just for shopping lists)
