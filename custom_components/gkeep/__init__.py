@@ -1,58 +1,26 @@
-"""
-Custom component for Home Assistant to enable adding to and updating lists on
-Google Keep. This component relies on gkeepapi, an unofficial client for the
-Google Keep API (https://github.com/kiwiz/gkeepapi).
+"""Custom component for the Google Keep API"""
 
-Example configuration.yaml entry:
+from .const import (
+    DOMAIN,
+    CONF_USERNAME,
+    CONF_PASSWORD,
+    CONF_LIST_NAME,
+    SERVICE_LIST_NAME,
+    SERVICE_LIST_ITEM,
+    SHOPPING_LIST_DOMAIN,
+    SERVICE_LIST_EMAIL
+)
 
-gkeep:
-  username: 'this_is_my_username@gmail.com'
-  password: 'this_is_my_Google_App_password'
-
-With this custom component loaded, a new service named google_keep.add_to_list
-is available. This service data call has two inputs: 'title' and 'things', where
-'title' is the title of the Google Keep list, and 'things' is a either a list of
-things, or a string. A string input for 'things' is parsed for multiple things
-separated by 'and'.
-"""
+from .schema import (
+    SERVICE_LIST_SCHEMA,
+    SERVICE_LIST_NAME_SCHEMA,
+    SERVICE_LIST_EMAIL_SCHEMA
+)
 
 import logging
-
-import voluptuous as vol
-import homeassistant.helpers.config_validation as cv
-
 from homeassistant.core import callback
 
 _LOGGER = logging.getLogger(__name__)
-
-# Domain and component constants and validation
-DOMAIN = "gkeep"
-SHOPPING_LIST_DOMAIN = "shopping_list"
-CONF_USERNAME = 'username'    # Google account username
-CONF_PASSWORD = 'password'    # Google App password, https://myaccount.google.com/apppasswords
-CONF_LIST_NAME = 'list_name'  # Default Google Keep list title
-DEFAULT_LIST_NAME = 'Grocery'
-
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-        vol.Required(CONF_USERNAME): cv.string,
-        vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_LIST_NAME, default=DEFAULT_LIST_NAME): cv.string,
-    }),
-}, extra=vol.ALLOW_EXTRA)
-
-# Service constants and validation
-SERVICE_LIST_NAME = 'title'   # Title of the Google Keep list to create or update, string
-SERVICE_LIST_ITEM = 'things'  # Things(s) to add to the list
-
-SERVICE_LIST_SCHEMA = vol.Schema({
-    vol.Optional(SERVICE_LIST_NAME): cv.string,
-    vol.Required(SERVICE_LIST_ITEM): cv.ensure_list_csv,
-})
-
-SERVICE_LIST_NAME_SCHEMA = vol.Schema({
-    vol.Optional(SERVICE_LIST_NAME): cv.string,
-})
 
 def setup(hass, config):
     """Setup the google_keep component."""
@@ -151,11 +119,20 @@ def setup(hass, config):
         """Clear a google keep shopping list."""        
         list_name = call.data.get(SERVICE_LIST_NAME, default_list_name)
 
-        # Sync with Google servers
-        keep.sync()
         google_keep_list = _get_or_create_list_name_(list_name)
         google_keep_list.delete()
-        
+        keep.sync()
+
+    def share_shopping_list(call):
+        """Share a google keep list"""
+        list_name = call.data.get(SERVICE_LIST_NAME, default_list_name)
+        email = call.data.get(SERVICE_LIST_EMAIL)
+
+        google_keep_list = _get_or_create_list_name_(list_name)
+
+        if not email in google_keep_list.collaborators.all():
+            google_keep_list.collaborators.add(email)
+            keep.sync()
 
     def _get_or_create_list_name_(list_name):
         """ Find the target list amongst all the Keep notes/lists """
@@ -174,6 +151,7 @@ def setup(hass, config):
     # Register the service google_keep.add_to_list with Home Assistant.
     hass.services.register(DOMAIN, 'add_to_list', add_to_list, schema=SERVICE_LIST_SCHEMA)
     hass.services.register(DOMAIN, 'clear_shopping_list', clear_shopping_list, schema=SERVICE_LIST_SCHEMA)
+    hass.services.register(DOMAIN, 'share_shopping_list', share_shopping_list, schema=SERVICE_LIST_EMAIL_SCHEMA)
 
     # Register the service google_keep.sync_shopping_list with Home Assistant.
     SHOPPING_LIST = hass.data.get(SHOPPING_LIST_DOMAIN)

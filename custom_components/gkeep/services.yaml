@@ -16,3 +16,20 @@ sync_shopping_list:
     title:
       description: Title of the Google Keep list for syncing the shopping list
       example: 'Grocery'
+
+clear_shopping_list:
+  description: Clear a Google Keep shopping list.
+  fields:
+    title:
+      description: Title of the Google Keep list for syncing the shopping list
+      example: 'Grocery'
+
+share_shopping_list:
+  description: Share a Google Keep Shopping list
+  fields:
+    title:
+      description: Title of the Google Keep list for sharing
+      example: 'Grocery'
+    email:
+      description: Email of the sharer
+      example: 'example@me.com'
