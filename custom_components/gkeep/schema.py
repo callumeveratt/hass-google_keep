@@ -7,7 +7,8 @@ from .const import (
     SERVICE_LIST_NAME,
     SERVICE_LIST_ITEM,
     DEFAULT_LIST_NAME,
-    SERVICE_LIST_EMAIL
+    SERVICE_LIST_EMAIL,
+    DOMAIN
 )
 
 import voluptuous as vol
