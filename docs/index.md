@@ -1,3 +1,8 @@
+---
+title: Home
+nav_order: 1
+---
+
 # hass-google_keep
 Custom component for [Home Assistant](https://home-assistant.io/) to enable adding to and updating lists on [Google Keep](https://keep.google.com/).
 
